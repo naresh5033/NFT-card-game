@@ -12,6 +12,7 @@ const CreateBattle = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    //battle status 1 - game on, 0 - pending/loading state
     if (gameData?.activeBattle?.battleStatus === 1) {
       navigate(`/battle/${gameData.activeBattle.name}`);
     } else if (gameData?.activeBattle?.battleStatus === 0) {
@@ -20,10 +21,13 @@ const CreateBattle = () => {
   }, [gameData]);
 
   const handleClick = async () => {
+    //if no battlename 0r trim then exit, else create new battle
     if (battleName === "" || battleName.trim() === "") return null;
 
     try {
-      await contract.createBattle(battleName);
+      await contract.createBattle(battleName, {
+        gasLimit: 200000,
+      });
 
       setWaitBattle(true);
     } catch (error) {

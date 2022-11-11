@@ -77,6 +77,7 @@ export const GlobalContextProvider = ({ children }) => {
   useEffect(() => {
     updateCurrentWalletAddress();
 
+    // whenever we change the wallet addr
     window?.ethereum?.on("accountsChanged", updateCurrentWalletAddress);
   }, []);
 
@@ -98,6 +99,7 @@ export const GlobalContextProvider = ({ children }) => {
 
   //* Activate event listeners for the smart contract
   useEffect(() => {
+    //if the step is -1, means we re not ready for the game, then we can't call the fn for create event listener
     if (step === -1 && contract) {
       createEventListeners({
         navigate,
@@ -118,6 +120,7 @@ export const GlobalContextProvider = ({ children }) => {
       if (contract) {
         const fetchedBattles = await contract.getAllBattles();
         const pendingBattles = fetchedBattles.filter(
+          //battle status 0 - pending
           (battle) => battle.battleStatus === 0
         );
         let activeBattle = null;
@@ -128,12 +131,13 @@ export const GlobalContextProvider = ({ children }) => {
               (player) => player.toLowerCase() === walletAddress.toLowerCase()
             )
           ) {
+            // 0x00 - means we don't ve a winner, and the battle is still active
             if (battle.winner.startsWith("0x00")) {
               activeBattle = battle;
             }
           }
         });
-
+        // we wanna start from 1, since 0th is reserved for 0x000
         setGameData({ pendingBattles: pendingBattles.slice(1), activeBattle });
       }
     };
@@ -156,7 +160,7 @@ export const GlobalContextProvider = ({ children }) => {
   useEffect(() => {
     if (errorMessage) {
       const parsedErrorMessage = errorMessage?.reason
-        ?.slice("execution reverted: ".length)
+        ?.slice("execution reverted: ".length) // if we have the error msg start with that str then we slice it to ve only the error msg not the str, that we mentioned
         .slice(0, -1);
 
       if (parsedErrorMessage) {
